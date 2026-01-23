@@ -1,13 +1,21 @@
+<head>
+    <link rel="stylesheet" href="/public/stylesheets/styles.css" />
+
+</head>
 <h1>Our Hours</h1>
 
 <% for (let day of days) { %>
   <% const hoursObj = (hoursdata[day] && hoursdata[day].open) ? hoursdata[day] : hoursdata.defaultHours; %>
 
-  <section style="display: inline-flex; flex-direction: column; padding: 5px;">
+  <section>
     <h2><%= day.toUpperCase() %></h2>
-    <div>
-      <p>Open: <%= hoursObj.open %></p>
-      <p>Closed: <%= hoursObj.closed %></p>
+    <div class="<%= hoursObj.open ? 'open' : 'closed' %>">
+      <% if (hoursObj.open) { %>
+        <p>Open: <%= hoursObj.open %></p>
+        <p class="closed">Closed: <%= hoursObj.closed %></p>
+      <% } else { %>
+        <p>CLOSED</p>
+      <% } %>
     </div>
   </section>
 <% } %>
