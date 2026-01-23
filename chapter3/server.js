@@ -1,19 +1,21 @@
 import Fastify from 'fastify';
+import hoursdata from './data/hoursdata.js';
+import menudata from './data/menudata.js';
 
 const app = Fastify();
 
-const port = 3000;
+const port = 4000;
 
 app.get('/', async (request, reply) => {
   return ("Hello, Fastify!");
 });
 
 app.get("/menu", async (request, reply) => { 1
-  return "TODO: Menu Page";
+  reply.send(menudata);
 });
 
 app.get("/hours", async (request, reply) => { 2
-  return "TODO: Hours Page";
+    reply.send(hoursdata);
 });
 
 app.listen({ port }, (err, address) => {
