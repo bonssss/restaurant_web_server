@@ -1,0 +1,11 @@
+<h1>Our Menu</h1>
+
+<ol>
+  <% for (let item of menudata) { %>
+    <li>
+      <strong><%= item.name %></strong><br>
+      <span><%= item.description %></span><br>
+      <span>$<%= item.cost %></span>
+    </li>
+  <% } %>
+</ol>
