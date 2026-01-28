@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "password_manager",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^6.0.0"
+    "bcrypt": "^6.0.0",
+    "prompt-sync": "^4.2.0"
   }
 }
