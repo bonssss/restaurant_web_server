@@ -11,7 +11,10 @@ const main = async () => {
   const { title, items } = await parser.parseURL(url);
   console.log(`Feed Title: ${title}`);
   const results = items.map(({ title, link }) => ({ title, link }));
-  console.log(results);
+//   console.log(results);
+console.clear();
+console.log('Last updated ', (new Date()).toUTCString() );
+  console.table(results);
 };
 
-main();
+setInterval(main, 2000);
