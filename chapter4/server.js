@@ -1,38 +1,69 @@
 import bcrypt from 'bcrypt';
 import promptSync from 'prompt-sync';
+import { MongoClient } from 'mongodb';
+
+const dbUrl = 'mongodb://localhost:27017';
+const client = new MongoClient(dbUrl);
+const dbName = 'password_manager';
+
+let authCollection;
+let passwordsCollection;
 
 const prompt = promptSync();
 
 /**
- * Mock database
+ * Connect to MongoDB
  */
-const mockDB = {
-  hash: null,
-  passwords: {}
+const main = async () => {
+  try {
+    await client.connect();
+    console.log('✅ Connected successfully to MongoDB');
+
+    const db = client.db(dbName);
+    authCollection = db.collection('auth');
+    passwordsCollection = db.collection('passwords');
+  } catch (error) {
+    console.error('❌ Error connecting to MongoDB:', error);
+    process.exit(1);
+  }
 };
 
 /**
- * Save master password
+ * Save master password to MongoDB
  */
-const saveNewPassword = (password) => {
-  mockDB.hash = bcrypt.hashSync(password, 10);
-  console.log('Password saved to mockDB');
+const saveMasterPassword = async (password) => {
+  const hash = await bcrypt.hash(password, 10);
+
+  await authCollection.deleteMany({}); // keep only one master password
+  await authCollection.insertOne({ type: 'master', hash });
+
+  console.log('✅ Master password saved in MongoDB');
   showMenu();
 };
 
 /**
- * Compare password with hash
+ * Get master password hash from MongoDB
  */
-const compareHashedPassword = async (password) => {
-  return bcrypt.compare(password, mockDB.hash);
+const getMasterHash = async () => {
+  const doc = await authCollection.findOne({ type: 'master' });
+  return doc?.hash || null;
+};
+
+/**
+ * Verify master password
+ */
+const verifyMasterPassword = async (password) => {
+  const hash = await getMasterHash();
+  if (!hash) return false;
+  return bcrypt.compare(password, hash);
 };
 
 /**
  * Prompt to create master password
  */
-const promptNewPassword = () => {
+const promptNewPassword = async () => {
   const response = prompt('Enter a main password: ');
-  saveNewPassword(response);
+  await saveMasterPassword(response);
 };
 
 /**
@@ -43,14 +74,14 @@ const promptOldPassword = async () => {
 
   while (!verified) {
     const response = prompt('Enter your password: ');
-    const result = await compareHashedPassword(response);
+    const result = await verifyMasterPassword(response);
 
     if (result) {
-      console.log('Password verified.');
+      console.log('✅ Password verified.');
       verified = true;
       showMenu();
     } else {
-      console.log('Password incorrect. Try again.');
+      console.log('❌ Password incorrect. Try again.');
     }
   }
 };
@@ -61,34 +92,37 @@ const promptOldPassword = async () => {
 const showMenu = async () => {
   console.log(`
 1. View passwords
-2. Manage new password
-3. Verify password
+2. Add new password
+3. Verify master password
 4. Exit
 `);
 
   const response = prompt('> ');
 
-  if (response === '1') viewPasswords();
-  else if (response === '2') promptManageNewPassword();
+  if (response === '1') await viewPasswords();
+  else if (response === '2') await addNewPassword();
   else if (response === '3') await promptOldPassword();
-  else if (response === '4') process.exit(0);
-  else {
-    console.log("That's an invalid response.");
+  else if (response === '4') {
+    console.log('👋 Bye!');
+    process.exit(0);
+  } else {
+    console.log("❌ Invalid option.");
     showMenu();
   }
 };
 
 /**
- * View passwords
+ * View passwords from MongoDB
  */
-const viewPasswords = () => {
-  const passwords = mockDB.passwords;
+const viewPasswords = async () => {
+  const passwords = await passwordsCollection.find().toArray();
 
-  if (Object.keys(passwords).length === 0) {
-    console.log('No passwords saved.');
+  if (passwords.length === 0) {
+    console.log('📭 No passwords saved.');
   } else {
-    Object.entries(passwords).forEach(([key, value], index) => {
-      console.log(`${index + 1}. ${key} => ${value}`);
+    console.log('\n🔐 Saved Passwords:');
+    passwords.forEach((item, index) => {
+      console.log(`${index + 1}. ${item.name} => ${item.password}`);
     });
   }
 
@@ -96,22 +130,27 @@ const viewPasswords = () => {
 };
 
 /**
- * Add new password
+ * Add new password to MongoDB
  */
-const promptManageNewPassword = () => {
-  const source = prompt('Enter name for password: ');
+const addNewPassword = async () => {
+  const name = prompt('Enter name for password: ');
   const password = prompt('Enter password to save: ');
 
-  mockDB.passwords[source] = password;
-  console.log(`Password for ${source} has been saved!`);
+  await passwordsCollection.insertOne({ name, password });
+
+  console.log(`✅ Password for "${name}" saved in MongoDB`);
   showMenu();
 };
 
 /**
  * App start
  */
-if (!mockDB.hash) {
-  promptNewPassword();
+await main();
+
+const masterHash = await getMasterHash();
+
+if (!masterHash) {
+  await promptNewPassword();
 } else {
-  promptOldPassword();
+  await promptOldPassword();
 }
