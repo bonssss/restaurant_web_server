@@ -9,6 +9,17 @@ async function booksRouter(fastify, _opts) {
             reply.send(err)
         }
     });
+
+    fastify.post('/', async (request, reply) => {
+        const { title, author } = request.body;
+        try{
+            const newBook = { id: Date.now(), title, author };
+            reply.status(201).send(newBook);
+        }catch(err){
+            console.error(err);
+            reply.send(err)
+        }
+    });
     
 }
 
