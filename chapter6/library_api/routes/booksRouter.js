@@ -52,14 +52,31 @@ async function booksRouter(fastify, _opts) {
   });
 
     fastify.post('/', async (request, reply) => {
-        const { title, author } = request.body;
-        try{
-            const newBook =  await Book.create({ title, author });
-            reply.status(201).send(newBook);
-        }catch(err){
-            console.error(err);
-            reply.send(err)
+      let { title, author } = request.body || {};
+      title = title && title.trim();
+      author = author && author.trim();
+
+      if (!title || !author) {
+        return reply.status(400).send({ error: 'Title and author are required' });
+      }
+
+      try {
+        // check for existing book with same title
+        const existing = await Book.findOne({ where: { title } });
+        if (existing) {
+          return reply.status(409).send({ error: 'A book with this title already exists' });
         }
+
+        const newBook = await Book.create({ title, author });
+        return reply.status(201).send(newBook);
+      } catch (err) {
+        console.error(err);
+        // fallback: handle unique constraint errors from the DB/ORM
+        // if (err && err.name === 'SequelizeUniqueConstraintError') {
+        //   return reply.status(409).send({ error: 'A book with this title already exists' });
+        // }
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
     });
 
     fastify.get('/', async (request, reply) => {
