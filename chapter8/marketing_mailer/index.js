@@ -5,9 +5,11 @@ import { welcomeMail } from "./mailTemplates.js";
 import { confirmationMail } from "./mailTemplates.js";
 import { campaignMail } from "./mailTemplates.js";
 import Lead from "./models/mailer.js";
+import { schedules } from "./services/scheduler.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+schedules({seconds: 30});
 
 const app = fastify();
 app.register(formbody);
