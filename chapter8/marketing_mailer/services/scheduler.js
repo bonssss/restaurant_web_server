@@ -4,7 +4,7 @@ import { campaignMail } from "../mailTemplates.js";
 export const schedules  = (timeOptions)=>{
    schedule.scheduleJob(timeOptions,async()=>{
         // console.log("Tme to send email");
-        sendMail("arifpay04@gmail.com", campaignMail("Special Promotion", "promo1", "arifpay04@gmail.com"));
+        sendMail("bons2112lidu@gmail.com", campaignMail("Special Promotion", "promo1", "bons2112lidu@gmail.com"));
         console.log("Email sent");
         
 
