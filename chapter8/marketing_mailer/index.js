@@ -66,7 +66,7 @@ app.get("/campaign/:campaignKey/user/:email/image.png", async (request, reply) =
 });
 
 
-sendMail("arifpay04@gmail.com", campaignMail("Special Promotion", "promo1", "arifpay04@gmail.com"))
+sendMail(process.env.RECEIVER_EMAIL, campaignMail("Special Promotion", "promo1", process.env.SENDER_EMAIL))
 
 
 const port = process.env.PORT || 3000;
