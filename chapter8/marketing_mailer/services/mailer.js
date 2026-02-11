@@ -1,16 +1,18 @@
 import { createTransport } from "nodemailer";
+import dotenv from "dotenv";
+dotenv.config();
 
 const transporter = createTransport({
     service: "gmail",
     auth: {
-        user: "bons6710hos@gmail.com",
-        pass: "bhdy ulkw hqay viue"
+        user: process.env.SENDER_EMAIL,
+        pass: process.env.PASSWORD
     }
 });
 
 const mailOptions = {
-    from: "bons6710hos@gmail.com",
-    to: "arifpay04@gmail.com",
+    from: process.env.SENDER_EMAIL,
+    to: process.env.RECEIVER_EMAIL,
     subject: "Hello from Node.js",
 html :
 `<html>
@@ -24,7 +26,7 @@ html :
 
 export const sendMail = async (to, html) => { 1
   const mailOptions = {
-    from: "bons6710hos@gmail.com",
+    from: process.env.SENDER_EMAIL,
     to,
     subject: "Email from Inn Box!",
     html,
