@@ -13,8 +13,8 @@ schedules({seconds: 30});
 
 const app = fastify();
 app.register(formbody);
-// const leads = await Lead.findAll();
-// console.log(leads);                                   
+const leads = await Lead.findAll();
+console.log(leads);                                   
 
 
 app.post("/subscribe",  async (request, reply) => {
